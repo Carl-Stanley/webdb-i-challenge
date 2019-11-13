@@ -30,5 +30,59 @@ router.get('/:id', (req, res) => {
 });
 
 // Delete an account 
+router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const count = await db.del().from('accounts').where({ id });
+        count ? res.status(200).json({ deleted: count })
+            : res.status(404).json({ message: 'invalid id' });
+    } catch (err) {
+        res.status(500).json({ message: 'database error', error: err });
+    }
+
+
+});
+
 // Add an account 
+router.post('/', async (req, res) => {
+    const postData = req.body;
+
+    try {
+        const post = await db.insert(postData).into('accounts');
+        res.status(201).json(post);
+    } catch (err) {
+        res.status(500).json({ message: 'db problem', error: err });
+    }
+
+    return; 
+    db.insert(postData).into('accounts')
+        .then(account => {
+            res.status(201).json(account);
+        })
+        .catch(err => {
+            res.status(500).json({ message: 'db problem', error: err });
+        });
+
+});
+
+// Update an account 
+router.put('/:id', (req, res) => {
+    const { id } = req.params;
+    const changes = req.body;
+
+    db('accounts').where({ id }).update(changes)
+        .then(count => {
+            if (count) {
+                res.status(200).json({ updated: count });
+            } else {
+                res.status(404).json({ message: 'invalid id' });
+            }
+        })
+        .catch(err => {
+            res.status(500).json({ message: 'db problem' });
+        });
+
+
+});
 module.exports = router;
